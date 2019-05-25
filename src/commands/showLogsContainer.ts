@@ -4,28 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IActionContext } from 'vscode-azureextensionui';
-import { ContainerNode } from '../../explorer/models/containerNode';
-import { RootNode } from '../../explorer/models/rootNode';
 import { ext } from '../extensionVariables';
-import { AllStatusFilter, ListContainerDescOptions } from '../utils/docker-endpoint';
-import { quickPickContainer } from '../utils/quick-pick-container';
+import { ContainerTreeItem } from '../tree/ContainerTreeItem';
 
-export async function showLogsContainer(context: IActionContext, node: RootNode | ContainerNode | undefined): Promise<void> {
-
-    let containerToLog: Docker.ContainerDesc;
-
-    if (node instanceof ContainerNode && node.containerDesc) {
-        containerToLog = node.containerDesc;
-    } else {
-        const opts: ListContainerDescOptions = {
-            "filters": {
-                "status": AllStatusFilter
-            }
-        };
-        containerToLog = await quickPickContainer(context, opts);
+export async function showLogsContainer(context: IActionContext, node: ContainerTreeItem | undefined): Promise<void> {
+    if (!node) {
+        node = await ext.containersTree.showTreeItemPicker(ContainerTreeItem.allContextValueRegExp, context);
     }
 
-    const terminal = ext.terminalProvider.createTerminal(containerToLog.Image);
-    terminal.sendText(`docker logs -f ${containerToLog.Id}`);
+    const terminal = ext.terminalProvider.createTerminal(node.container.Image);
+    terminal.sendText(`docker logs -f ${node.container.Id}`);
     terminal.show();
 }

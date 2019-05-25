@@ -7,7 +7,7 @@ import * as assert from 'assert';
 import { ImageDesc } from 'dockerode';
 import * as moment from 'moment';
 import * as vscode from 'vscode';
-import { extractRegExGroups } from '../../src/utils/extractRegExGroups';
+import { extractRegExGroups } from '../utils/extractRegExGroups';
 
 // If options not specified, retrieves them from user settings
 export function getImageLabel(fullTag: string, image: ImageDesc, labelTemplate: string, options?: { truncateLongRegistryPaths: boolean, truncateMaxLength: number }): string {

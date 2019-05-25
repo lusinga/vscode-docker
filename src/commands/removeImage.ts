@@ -5,47 +5,18 @@
 
 import vscode = require('vscode');
 import { IActionContext } from 'vscode-azureextensionui';
-import { ImageNode } from "../../explorer/models/imageNode";
-import { RootNode } from '../../explorer/models/rootNode';
-import { docker } from '../utils/docker-endpoint';
-import { ImageItem, quickPickImage } from '../utils/quick-pick-image';
+import { ext } from '../extensionVariables';
+import { ImageTreeItem } from '../tree/ImageTreeItem';
 
-export async function removeImage(context: IActionContext, node: ImageNode | RootNode | undefined): Promise<void> {
-
-    let imagesToRemove: Docker.ImageDesc[];
-
-    if (node instanceof ImageNode && node.imageDesc) {
-        imagesToRemove = [node.imageDesc];
+export async function removeImage(context: IActionContext, node: ImageTreeItem | undefined): Promise<void> {
+    let nodes: ImageTreeItem[] = [];
+    if (node) {
+        nodes = [node];
     } else {
-        const selectedItem: ImageItem = await quickPickImage(context, true);
-        if (selectedItem) {
-            if (selectedItem.allImages) {
-                imagesToRemove = await docker.getImageDescriptors();
-            } else {
-                imagesToRemove = [selectedItem.imageDesc];
-            }
-        }
+        nodes = await ext.imagesTree.showTreeItemPicker(ImageTreeItem.contextValue, { ...context, canPickMany: true });
     }
 
-    if (imagesToRemove) {
-        const numImages: number = imagesToRemove.length;
-        let imageCounter: number = 0;
-
-        vscode.window.setStatusBarMessage("Docker: Removing Image(s)...", new Promise((resolve, reject) => {
-            imagesToRemove.forEach((img) => {
-                // tslint:disable-next-line:no-function-expression no-any // Grandfathered in
-                docker.getImage(img.Id).remove({ force: true }, function (err: { message?: string }, _data: any): void {
-                    imageCounter++;
-                    if (err) {
-                        // TODO: use parseError, proper error handling
-                        vscode.window.showErrorMessage(err.message);
-                        reject();
-                    }
-                    if (imageCounter === numImages) {
-                        resolve();
-                    }
-                });
-            });
-        }));
-    }
+    await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: "Removing Image(s)..." }, async () => {
+        await Promise.all(nodes.map(async n => await n.deleteTreeItem(context)));
+    });
 }

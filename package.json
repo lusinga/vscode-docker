@@ -54,9 +54,8 @@
     "onCommand:vscode-docker.container.restart",
     "onCommand:vscode-docker.container.show-logs",
     "onCommand:vscode-docker.container.start",
-    "onCommand:vscode-docker.container.start.azurecli",
-    "onCommand:vscode-docker.container.start.interactive",
     "onCommand:vscode-docker.container.stop",
+    "onCommand:vscode-docker.containers.refresh",
     "onCommand:vscode-docker.createWebApp",
     "onCommand:vscode-docker.disconnectCustomRegistry",
     "onCommand:vscode-docker.dockerHubLogin",
@@ -66,8 +65,12 @@
     "onCommand:vscode-docker.image.inspect",
     "onCommand:vscode-docker.image.push",
     "onCommand:vscode-docker.image.remove",
-    "onCommand:vscode-docker.images.selectGroupBy",
+    "onCommand:vscode-docker.image.runAzureCli",
+    "onCommand:vscode-docker.image.runInteractive",
+    "onCommand:vscode-docker.image.run",
     "onCommand:vscode-docker.image.tag",
+    "onCommand:vscode-docker.images.refresh",
+    "onCommand:vscode-docker.images.selectGroupBy",
     "onCommand:vscode-docker.setRegistryAsDefault",
     "onCommand:vscode-docker.system.prune",
     "onDebugInitialConfigurations",
@@ -184,16 +187,26 @@
         },
         {
           "command": "vscode-docker.system.prune",
-          "when": "view == dockerExplorer",
+          "when": "viewContainer == dockerView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "vscode-docker.containers.refresh",
+          "when": "view == dockerContainers",
+          "group": "navigation@1"
+        },
+        {
+          "command": "vscode-docker.images.selectGroupBy",
+          "when": "view == dockerImages",
+          "group": "navigation@1"
+        },
+        {
+          "command": "vscode-docker.images.refresh",
+          "when": "view == dockerImages",
           "group": "navigation@2"
         }
       ],
       "view/item/context": [
-        {
-          "command": "vscode-docker.images.selectGroupBy",
-          "when": "view == dockerExplorer && viewItem =~ /^imagesRootNode$/",
-          "group": "inline"
-        },
         {
           "command": "vscode-docker.acr.createRegistry",
           "when": "view == dockerExplorer && viewItem == azureRegistryRootNode",
@@ -245,13 +258,13 @@
           "group": "default"
         },
         {
-          "command": "vscode-docker.browseDockerHub",
-          "when": "view == dockerExplorer && viewItem =~ /^(dockerHubImageTagNode|dockerHubRepositoryNode|dockerHubOrgNode)$/",
+          "command": "vscode-docker.browseAzurePortal",
+          "when": "view == dockerExplorer && viewItem =~ /^(azureRegistryNode|azureRepositoryNode|azureImageTagNode)$/",
           "group": "default"
         },
         {
-          "command": "vscode-docker.browseAzurePortal",
-          "when": "view == dockerExplorer && viewItem =~ /^(azureRegistryNode|azureRepositoryNode|azureImageTagNode)$/",
+          "command": "vscode-docker.browseDockerHub",
+          "when": "view == dockerExplorer && viewItem =~ /^(dockerHubImageTagNode|dockerHubRepositoryNode|dockerHubOrgNode)$/",
           "group": "default"
         },
         {
@@ -261,38 +274,33 @@
         },
         {
           "command": "vscode-docker.container.open-shell",
-          "when": "view == dockerExplorer && viewItem =~ /^(runningLocalContainerNode|containersRootNode)$/",
-          "group": "default"
+          "when": "view == dockerContainers && viewItem =~ /^runningContainer$/",
+          "group": "1@1"
         },
         {
           "command": "vscode-docker.container.remove",
-          "when": "view == dockerExplorer && viewItem =~ /^(stoppedLocalContainerNode|runningLocalContainerNode|containersRootNode)$/",
-          "group": "default"
+          "when": "view == dockerContainers && viewItem =~ /Container$/",
+          "group": "2@3"
         },
         {
           "command": "vscode-docker.container.restart",
-          "when": "view == dockerExplorer && viewItem =~ /^(runningLocalContainerNode|stoppedLocalContainerNode|containersRootNode)$/",
-          "group": "default"
+          "when": "view == dockerContainers && viewItem =~ /^runningContainer$/",
+          "group": "2@2"
         },
         {
           "command": "vscode-docker.container.show-logs",
-          "when": "view == dockerExplorer && viewItem =~ /^(runningLocalContainerNode|stoppedLocalContainerNode|containersRootNode)$/",
-          "group": "default"
+          "when": "view == dockerContainers && viewItem =~ /Container$/",
+          "group": "1@2"
         },
         {
           "command": "vscode-docker.container.start",
-          "when": "view == dockerExplorer && viewItem =~ /^(localImageNode|imagesRootNode)$/",
-          "group": "5_default"
-        },
-        {
-          "command": "vscode-docker.container.start.interactive",
-          "when": "view == dockerExplorer && viewItem =~ /^(localImageNode|imagesRootNode)$/",
-          "group": "5_default"
+          "when": "view == dockerContainers && viewItem =~ /^(created|dead|exited|paused)Container$/",
+          "group": "2@1"
         },
         {
           "command": "vscode-docker.container.stop",
-          "when": "view == dockerExplorer && viewItem =~ /^(runningLocalContainerNode|containersRootNode)$/",
-          "group": "5_default"
+          "when": "view == dockerContainers && viewItem =~ /^(paused|restarting|running)Container$/",
+          "group": "2@1"
         },
         {
           "command": "vscode-docker.createWebApp",
@@ -311,23 +319,33 @@
         },
         {
           "command": "vscode-docker.image.inspect",
-          "when": "view == dockerExplorer && viewItem =~ /^(localImageNode|imagesRootNode)$/",
-          "group": "5_default"
+          "when": "view == dockerImages && viewItem == image",
+          "group": "2@1"
         },
         {
           "command": "vscode-docker.image.push",
-          "when": "view == dockerExplorer && viewItem =~ /^(localImageNode|imagesRootNode)$/",
-          "group": "5_default"
+          "when": "view == dockerImages && viewItem == image",
+          "group": "2@2"
         },
         {
           "command": "vscode-docker.image.remove",
-          "when": "view == dockerExplorer && viewItem =~ /^(localImageNode|imagesRootNode)$/",
-          "group": "5_default"
+          "when": "view == dockerImages && viewItem == image",
+          "group": "2@4"
+        },
+        {
+          "command": "vscode-docker.image.run",
+          "when": "view == dockerImages && viewItem == image",
+          "group": "1@1"
+        },
+        {
+          "command": "vscode-docker.image.runInteractive",
+          "when": "view == dockerImages && viewItem == image",
+          "group": "1@2"
         },
         {
           "command": "vscode-docker.image.tag",
-          "when": "view == dockerExplorer && viewItem =~ /^(localImageNode|imagesRootNode)$/",
-          "group": "5_default"
+          "when": "view == dockerImages && viewItem == image",
+          "group": "2@3"
         },
         {
           "command": "vscode-docker.setRegistryAsDefault",
@@ -769,15 +787,6 @@
     },
     "commands": [
       {
-        "command": "vscode-docker.images.selectGroupBy",
-        "title": "Group Images By...",
-        "icon": {
-          "light": "resources/SortingGrouping_16x.svg",
-          "dark": "resources/SortingGrouping_16x.svg"
-        },
-        "category": "Docker"
-      },
-      {
         "command": "vscode-docker.acr.createRegistry",
         "title": "Create Azure Registry",
         "category": "Docker"
@@ -845,13 +854,13 @@
         "title": "Add Docker Files to Workspace (API)"
       },
       {
-        "command": "vscode-docker.browseDockerHub",
-        "title": "Browse in Docker Hub",
+        "command": "vscode-docker.browseAzurePortal",
+        "title": "Browse in the Azure Portal",
         "category": "Docker"
       },
       {
-        "command": "vscode-docker.browseAzurePortal",
-        "title": "Browse in the Azure Portal",
+        "command": "vscode-docker.browseDockerHub",
+        "title": "Browse in Docker Hub",
         "category": "Docker"
       },
       {
@@ -887,49 +896,41 @@
         "command": "vscode-docker.container.open-shell",
         "title": "Attach Shell",
         "description": "Open a terminal with an interactive shell for a running container",
-        "category": "Docker"
+        "category": "Docker Container"
       },
       {
         "command": "vscode-docker.container.remove",
-        "title": "Remove Container",
-        "description": "Remove a stopped container",
-        "category": "Docker"
+        "title": "Remove",
+        "category": "Docker Container"
       },
       {
         "command": "vscode-docker.container.restart",
-        "title": "Restart Container",
-        "description": "Restart one or more containers",
-        "category": "Docker"
+        "title": "Restart",
+        "category": "Docker Container"
       },
       {
         "command": "vscode-docker.container.show-logs",
         "title": "Show Logs",
-        "description": "Show the logs of a running container",
-        "category": "Docker"
+        "category": "Docker Container"
       },
       {
         "command": "vscode-docker.container.start",
-        "title": "Run",
-        "description": "Starts a container from an image",
-        "category": "Docker"
-      },
-      {
-        "command": "vscode-docker.container.start.azurecli",
-        "title": "Azure CLI",
-        "description": "Starts a container from the Azure CLI image and runs it interactively",
-        "category": "Docker"
-      },
-      {
-        "command": "vscode-docker.container.start.interactive",
-        "title": "Run Interactive",
-        "description": "Starts a container from an image and runs it interactively",
-        "category": "Docker"
+        "title": "Start",
+        "category": "Docker Container"
       },
       {
         "command": "vscode-docker.container.stop",
-        "title": "Stop Container",
-        "description": "Stop a running container",
-        "category": "Docker"
+        "title": "Stop",
+        "category": "Docker Container"
+      },
+      {
+        "command": "vscode-docker.containers.refresh",
+        "title": "Refresh",
+        "category": "Docker Containers",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
       },
       {
         "command": "vscode-docker.createWebApp",
@@ -968,27 +969,60 @@
       },
       {
         "command": "vscode-docker.image.inspect",
-        "title": "Inspect Image",
-        "description": "Inspect the metadata of a Docker image",
-        "category": "Docker"
+        "title": "Inspect",
+        "category": "Docker Image"
       },
       {
         "command": "vscode-docker.image.push",
         "title": "Push",
         "description": "Push an image to a registry",
-        "category": "Docker"
+        "category": "Docker Image"
       },
       {
         "command": "vscode-docker.image.remove",
-        "title": "Remove Image",
-        "description": "Remove a Docker image",
-        "category": "Docker"
+        "title": "Remove",
+        "category": "Docker Image"
+      },
+      {
+        "command": "vscode-docker.image.run",
+        "title": "Run",
+        "description": "Starts a container from an image",
+        "category": "Docker Image"
+      },
+      {
+        "command": "vscode-docker.image.runAzureCli",
+        "title": "Run Azure CLI",
+        "description": "Starts a container from the Azure CLI image and runs it interactively",
+        "category": "Docker Image"
+      },
+      {
+        "command": "vscode-docker.image.runInteractive",
+        "title": "Run Interactive",
+        "description": "Starts a container from an image and runs it interactively",
+        "category": "Docker Image"
       },
       {
         "command": "vscode-docker.image.tag",
-        "title": "Tag Image",
-        "description": "Tag a Docker image",
-        "category": "Docker"
+        "title": "Tag",
+        "category": "Docker Image"
+      },
+      {
+        "command": "vscode-docker.images.refresh",
+        "title": "Refresh",
+        "category": "Docker Images",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      },
+      {
+        "command": "vscode-docker.images.selectGroupBy",
+        "title": "Group By...",
+        "category": "Docker Images",
+        "icon": {
+          "light": "resources/light/grouping.svg",
+          "dark": "resources/dark/grouping.svg"
+        }
       },
       {
         "command": "vscode-docker.setRegistryAsDefault",
@@ -1011,6 +1045,14 @@
           "id": "dockerExplorer",
           "name": "Explorer",
           "when": "config.docker.showExplorer == true"
+        },
+        {
+          "id": "dockerContainers",
+          "name": "Containers"
+        },
+        {
+          "id": "dockerImages",
+          "name": "Images"
         }
       ]
     },

@@ -28,7 +28,7 @@ export class AzureRegistryNode extends NodeBase {
     }
 
     public readonly contextValue: string = 'azureRegistryNode';
-    public readonly iconPath: treeUtils.IThemedIconPath = treeUtils.getThemedIconPath('Registry_16x');
+    public readonly iconPath: treeUtils.IThemedIconPath = treeUtils.getThemedIconPath('registry');
 
     public getTreeItem(): vscode.TreeItem {
         return {
@@ -85,7 +85,7 @@ export class AzureRepositoryNode extends NodeBase {
 
     public static readonly contextValue: string = 'azureRepositoryNode';
     public readonly contextValue: string = AzureRepositoryNode.contextValue;
-    public readonly iconPath: treeUtils.IThemedIconPath = treeUtils.getThemedIconPath('Repository_16x');
+    public readonly iconPath: treeUtils.IThemedIconPath = treeUtils.getThemedIconPath('repository');
 
     public getTreeItem(): vscode.TreeItem {
         return {

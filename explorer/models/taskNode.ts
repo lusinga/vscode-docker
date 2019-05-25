@@ -32,7 +32,7 @@ export class TaskRootNode extends NodeBase {
 
     public readonly contextValue: string = 'taskRootNode';
     public name: string;
-    public readonly iconPath: treeUtils.IThemedIconPath = treeUtils.getThemedIconPath('tasks');
+    public readonly iconPath: treeUtils.IThemedIconPath = treeUtils.getThemedIconPath('task');
 
     public getTreeItem(): vscode.TreeItem {
         return {

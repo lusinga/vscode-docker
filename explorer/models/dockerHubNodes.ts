@@ -30,7 +30,7 @@ export class DockerHubOrgNode extends NodeBase {
     public readonly contextValue: string = DockerHubOrgNode.contextValue;
     public readonly label: string = this.namespace;
 
-    public readonly iconPath: treeUtils.IThemedIconPath = treeUtils.getThemedIconPath('Registry_16x');
+    public readonly iconPath: treeUtils.IThemedIconPath = treeUtils.getThemedIconPath('registry');
 
     public getTreeItem(): vscode.TreeItem {
         return {
@@ -81,7 +81,7 @@ export class DockerHubRepositoryNode extends NodeBase {
     public static readonly contextValue: string = 'dockerHubRepositoryNode';
     public readonly contextValue: string = DockerHubRepositoryNode.contextValue;
 
-    public readonly iconPath: treeUtils.IThemedIconPath = treeUtils.getThemedIconPath('Repository_16x');
+    public readonly iconPath: treeUtils.IThemedIconPath = treeUtils.getThemedIconPath('repository');
     public repository: dockerHub.RepositoryInfo;
     public userName: string;
     public password: string;

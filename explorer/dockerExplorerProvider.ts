@@ -12,22 +12,10 @@ export class DockerExplorerProvider implements vscode.TreeDataProvider<NodeBase>
 
     private _onDidChangeTreeData: vscode.EventEmitter<NodeBase> = new vscode.EventEmitter<NodeBase>();
     public readonly onDidChangeTreeData: vscode.Event<NodeBase> = this._onDidChangeTreeData.event;
-    private _imagesNode: RootNode | undefined;
-    private _containersNode: RootNode | undefined;
     private _registriesNode: RootNode | undefined;
 
     public refresh(): void {
-        this.refreshImages();
-        this.refreshContainers();
         this.refreshRegistries();
-    }
-
-    public refreshImages(): void {
-        this._onDidChangeTreeData.fire(this._imagesNode);
-    }
-
-    public refreshContainers(): void {
-        this._onDidChangeTreeData.fire(this._containersNode);
     }
 
     public refreshRegistries(): void {
@@ -57,14 +45,6 @@ export class DockerExplorerProvider implements vscode.TreeDataProvider<NodeBase>
     private async getRootNodes(): Promise<RootNode[]> {
         const rootNodes: RootNode[] = [];
         let node: RootNode;
-
-        node = new RootNode('Images', 'imagesRootNode', this._onDidChangeTreeData);
-        this._imagesNode = node;
-        rootNodes.push(node);
-
-        node = new RootNode('Containers', 'containersRootNode', this._onDidChangeTreeData);
-        this._containersNode = node;
-        rootNodes.push(node);
 
         node = new RootNode('Registries', 'registriesRootNode', this._onDidChangeTreeData);
         this._registriesNode = node;

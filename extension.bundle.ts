@@ -23,7 +23,7 @@ export { ext } from './src/extensionVariables';
 export { nonNullProp } from './src/utils/nonNull';
 export { IKeytar } from './src/utils/keytar';
 export { throwDockerConnectionError, internal } from './explorer/utils/dockerConnectionError';
-export { getImageLabel, trimWithElipsis } from './explorer/models/getImageLabel';
+export { getImageLabel, trimWithElipsis } from './src/tree/getImageLabel';
 export { isWindows10RS3OrNewer, isWindows10RS4OrNewer, isWindows10RS5OrNewer } from "./src/utils/osVersion";
 export { LineSplitter } from './src/debugging/coreclr/lineSplitter';
 export { CommandLineBuilder } from './src/debugging/coreclr/commandLineBuilder';

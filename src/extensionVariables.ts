@@ -6,8 +6,8 @@
 import * as osNode from 'os';
 import { RequestAPI, RequiredUriUrl } from 'request';
 import { RequestPromise, RequestPromiseOptions } from 'request-promise-native';
-import { ExtensionContext, OutputChannel } from "vscode";
-import { IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
+import { ExtensionContext, OutputChannel, TreeView } from "vscode";
+import { AzExtTreeDataProvider, AzExtTreeItem, IAzureUserInput, ITelemetryReporter } from "vscode-azureextensionui";
 import { DockerExplorerProvider } from '../explorer/dockerExplorerProvider';
 import { IKeytar } from './utils/keytar';
 import { ITerminalProvider } from "./utils/TerminalProvider";
@@ -33,6 +33,11 @@ export namespace ext {
     export let terminalProvider: ITerminalProvider;
     export let keytar: IKeytar | undefined;
     export let dockerExplorerProvider: DockerExplorerProvider;
+
+    export let imagesTree: AzExtTreeDataProvider;
+    export let imagesTreeView: TreeView<AzExtTreeItem>;
+    export let containersTree: AzExtTreeDataProvider;
+    export let containersTreeView: TreeView<AzExtTreeItem>;
 
     /**
      * A version of 'request-promise' which should be used for all direct request calls (it has the user agent set up properly)

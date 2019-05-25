@@ -10,7 +10,7 @@ import { CoreOptions } from 'request';
 import { RequestPromise } from 'request-promise-native';
 import * as request from 'request-promise-native';
 import * as vscode from 'vscode';
-import { AzureUserInput, callWithTelemetryAndErrorHandling, createTelemetryReporter, IActionContext, registerCommand as uiRegisterCommand, registerUIExtensionVariables, TelemetryProperties, UserCancelledError } from 'vscode-azureextensionui';
+import { AzExtTreeItem, AzureUserInput, callWithTelemetryAndErrorHandling, createTelemetryReporter, IActionContext, registerCommand as uiRegisterCommand, registerUIExtensionVariables, TelemetryProperties, UserCancelledError } from 'vscode-azureextensionui';
 import { ConfigurationParams, DidChangeConfigurationNotification, DocumentSelector, LanguageClient, LanguageClientOptions, Middleware, ServerOptions, TransportKind } from 'vscode-languageclient/lib/main';
 import { AzureAccountWrapper } from '../explorer/deploy/azureAccountWrapper';
 import { WebAppCreator } from '../explorer/deploy/webAppCreator';
@@ -35,15 +35,16 @@ import { untagAzureImage } from './commands/azure/untagAzureImage';
 import { viewAzureLogs } from "./commands/azure/viewAzureLogs";
 import { buildImage } from './commands/buildImage';
 import { composeDown, composeRestart, composeUp } from './commands/compose';
-import inspectImage from './commands/inspectImage';
+import { inspectImage } from './commands/inspectImage';
 import { openShellContainer } from './commands/openShellContainer';
 import { pushImage } from './commands/pushImage';
 import { consolidateDefaultRegistrySettings, setRegistryAsDefault } from './commands/registrySettings';
 import { removeContainer } from './commands/removeContainer';
 import { removeImage } from './commands/removeImage';
 import { restartContainer } from './commands/restartContainer';
+import { runAzureCliImage, runImage, runImageInteractive } from './commands/runImage';
 import { showLogsContainer } from './commands/showLogsContainer';
-import { startAzureCLI, startContainer, startContainerInteractive } from './commands/startContainer';
+import { startContainer } from './commands/startContainer';
 import { stopContainer } from './commands/stopContainer';
 import { systemPrune } from './commands/systemPrune';
 import { tagImage } from './commands/tagImage';
@@ -58,6 +59,8 @@ import { DockerComposeParser } from './dockerCompose/dockerComposeParser';
 import { DockerfileCompletionItemProvider } from './dockerfileCompletionItemProvider';
 import DockerInspectDocumentContentProvider, { SCHEME as DOCKER_INSPECT_SCHEME } from './dockerInspect';
 import { DefaultImageGrouping, ext, ImageGrouping } from './extensionVariables';
+import { initTrees } from './tree/initTrees';
+import { OpenUrlTreeItem } from './tree/OpenUrlTreeItem';
 import { addUserAgent } from './utils/addUserAgent';
 import { AzureUtilityManager } from './utils/azureUtilityManager';
 import { docker } from './utils/docker-endpoint';
@@ -109,6 +112,8 @@ export async function activateInternal(ctx: vscode.ExtensionContext, perfStats: 
   await callWithTelemetryAndErrorHandling('docker.activate', async (activateContext: IActionContext) => {
     activateContext.telemetry.properties.isActivationEvent = 'true';
     activateContext.telemetry.measurements.mainFileLoad = (perfStats.loadEndTime - perfStats.loadStartTime) / 1000;
+
+    initTrees();
 
     ctx.subscriptions.push(
       vscode.languages.registerCompletionItemProvider(
@@ -293,9 +298,8 @@ function registerDockerCommands(): void {
   registerCommand('vscode-docker.container.restart', restartContainer);
   registerCommand('vscode-docker.container.show-logs', showLogsContainer);
   registerCommand('vscode-docker.container.start', startContainer);
-  registerCommand('vscode-docker.container.start.azurecli', startAzureCLI);
-  registerCommand('vscode-docker.container.start.interactive', startContainerInteractive);
   registerCommand('vscode-docker.container.stop', stopContainer);
+  registerCommand('vscode-docker.containers.refresh', async (_context: IActionContext, node?: AzExtTreeItem) => ext.containersTree.refresh(node));
 
   registerCommand('vscode-docker.createWebApp', createWebApp);
   registerCommand('vscode-docker.disconnectCustomRegistry', disconnectCustomRegistry);
@@ -307,10 +311,17 @@ function registerDockerCommands(): void {
   registerCommand('vscode-docker.image.inspect', inspectImage);
   registerCommand('vscode-docker.image.push', pushImage);
   registerCommand('vscode-docker.image.remove', removeImage);
+  registerCommand('vscode-docker.image.run', runImage);
+  registerCommand('vscode-docker.image.runAzureCli', runAzureCliImage);
+  registerCommand('vscode-docker.image.runInteractive', runImageInteractive);
   registerCommand('vscode-docker.image.tag', tagImage);
+  registerCommand('vscode-docker.images.refresh', async (_context: IActionContext, node?: AzExtTreeItem) => ext.imagesTree.refresh(node));
 
   registerCommand('vscode-docker.setRegistryAsDefault', setRegistryAsDefault);
   registerCommand('vscode-docker.system.prune', systemPrune);
+
+  registerCommand('vscode-docker.openUrl', async (_context: IActionContext, node: OpenUrlTreeItem) => node.openUrl());
+
 }
 
 export async function deactivateInternal(): Promise<void> {
@@ -447,12 +458,12 @@ async function selectGroupImagesBy(): Promise<void> {
       placeHolder: "Select how to group the Images node entries"
     });
 
-  groupImagesBy(response.data);
+  await groupImagesBy(response.data);
 }
 
-function groupImagesBy(groupBy: ImageGrouping): void {
+async function groupImagesBy(groupBy: ImageGrouping): Promise<void> {
   ext.groupImagesBy = groupBy;
   const configOptions: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration(configPrefix);
   configOptions.update(configurationKeys.groupImagesBy, ImageGrouping[ext.groupImagesBy], vscode.ConfigurationTarget.Global);
-  ext.dockerExplorerProvider.refreshImages();
+  await ext.imagesTree.refresh();
 }

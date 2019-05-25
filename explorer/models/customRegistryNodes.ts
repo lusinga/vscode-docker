@@ -17,7 +17,7 @@ export class CustomRegistryNode extends NodeBase {
     public static readonly contextValue: string = 'customRegistryNode';
     public contextValue: string = CustomRegistryNode.contextValue;
 
-    public readonly iconPath: treeUtils.IThemedIconPath = treeUtils.getThemedIconPath('Registry_16x');
+    public readonly iconPath: treeUtils.IThemedIconPath = treeUtils.getThemedIconPath('registry');
 
     constructor(
         public registryName: string,
@@ -64,7 +64,7 @@ export class CustomRegistryNode extends NodeBase {
 export class CustomRepositoryNode extends NodeBase {
     public static readonly contextValue: string = 'customRepository';
     public contextValue: string = CustomRepositoryNode.contextValue;
-    public readonly iconPath: treeUtils.IThemedIconPath = treeUtils.getThemedIconPath('Repository_16x');
+    public readonly iconPath: treeUtils.IThemedIconPath = treeUtils.getThemedIconPath('repository');
 
     constructor(
         public readonly repositoryName: string, // e.g. 'hello-world' or 'registry'
